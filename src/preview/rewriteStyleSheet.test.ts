@@ -81,4 +81,18 @@ describe("rewriteStyleSheet", () => {
     rewriteStyleSheet(sheet as any)
     expect(sheet.cssRules[0].cssText).toEqual(":not(:hover), :not(.pseudo-hover) { color: red }")
   })
+
+  it('skips escaped pseduo-selectors "\\:hover"', () => {
+    const sheet = new Sheet("a\\:hover { color: red }")
+    rewriteStyleSheet(sheet)
+    expect(sheet.cssRules.length).toEqual(1)
+    expect(sheet.cssRules[0].cssText).toEqual("a\\:hover { color: red }")
+    expect(sheet.cssRules[0].selectorText).toEqual("a\\:hover")
+  })
+
+  it('supports "\\\\:hover"', () => {
+    const sheet = new Sheet(".btn\\\\:hover { color: red }")
+    rewriteStyleSheet(sheet)
+    expect(sheet.cssRules[0]).toEqual(".btn\\\\:hover, .btn\\\\.pseudo-hover, .pseudo-hover .btn\\\\ { color: red }")
+  })
 })

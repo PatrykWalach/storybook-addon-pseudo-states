@@ -1,9 +1,18 @@
-import { PSEUDO_STATES, EXCLUDED_PSEUDO_ELEMENTS } from "../constants"
+import { EXCLUDED_PSEUDO_ELEMENTS, PSEUDO_STATES } from "../constants"
 import { splitSelectors } from "./splitSelectors"
 
 const pseudoStates = Object.values(PSEUDO_STATES)
-const matchOne = new RegExp(`:(${pseudoStates.join("|")})`)
-const matchAll = new RegExp(`:(${pseudoStates.join("|")})`, "g")
+/** skip odd number of '\' escapes
+ * but keep even
+ * @example
+ * skip \:pseudo-selector 
+ * skip \\\:pseudo-selector 
+ * 
+ * keep \\:pseudo-selector
+ * keep \\\\:pseudo-selector
+ */
+const matchOne = new RegExp(`(?<=(?<!\\\\)(?:\\\\\\\\)*):(${pseudoStates.join("|")})`)
+const matchAll = new RegExp(`(?<=(?<!\\\\)(?:\\\\\\\\)*):(${pseudoStates.join("|")})`, "g")
 
 const warnings = new Set()
 const warnOnce = (message: string) => {
@@ -35,7 +44,7 @@ const rewriteRule = ({ cssText, selectorText }: CSSStyleRule, shadowRoot?: Shado
         })
         const classSelector = states.reduce((acc, state) => {
           if (isExcludedPseudoElement(selector, state)) return ""
-          return acc.replace(new RegExp(`(?<!Y):${state}`, "g"), `.pseudo-${state}`)
+          return acc.replace(new RegExp(`(?<=(?<!\\\\)(?:\\\\\\\\)*):${state}`, "g"), `.pseudo-${state}`)
         }, selector)
 
         if (selector.startsWith(":host(") || selector.startsWith("::slotted(")) {
