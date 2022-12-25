@@ -90,9 +90,9 @@ describe("rewriteStyleSheet", () => {
     expect(sheet.cssRules[0].selectorText).toEqual("a\\:hover")
   })
 
-  it('supports "\\\\:hover"', () => {
+  it('supports escaped \\ characters "\\\\:hover"', () => {
     const sheet = new Sheet(".btn\\\\:hover { color: red }")
     rewriteStyleSheet(sheet)
-    expect(sheet.cssRules[0]).toEqual(".btn\\\\:hover, .btn\\\\.pseudo-hover, .pseudo-hover .btn\\\\ { color: red }")
+    expect(sheet.cssRules[0].cssText).toEqual(".btn\\\\:hover, .btn\\\\.pseudo-hover, .pseudo-hover .btn\\\\ { color: red }")
   })
 })
