@@ -47,13 +47,19 @@ const rewriteRule = ({ cssText, selectorText }: CSSStyleRule, shadowRoot?: Shado
           return acc.replace(new RegExp(`(?<=(?<!\\\\)(?:\\\\\\\\)*):${state}`, "g"), `.pseudo-${state}`)
         }, selector)
 
+        const classAllSelector = states.reduce((acc, state) => {
+          if (isExcludedPseudoElement(selector, state)) return ""
+          return acc.replace(new RegExp(`:${state}`, "g"), `.pseudo-${state}-all`)
+        }, selector)
+
+
         if (selector.startsWith(":host(") || selector.startsWith("::slotted(")) {
-          return [selector, classSelector].filter(Boolean)
+          return [selector, classSelector, classAllSelector].filter(Boolean)
         }
 
         const ancestorSelector = shadowRoot
-          ? `:host(${states.map((s) => `.pseudo-${s}`).join("")}) ${plainSelector}`
-          : `${states.map((s) => `.pseudo-${s}`).join("")} ${plainSelector}`
+          ? `:host(${states.map((s) => `.pseudo-${s}-all`).join("")}) ${plainSelector}`
+          : `${states.map((s) => `.pseudo-${s}-all`).join("")} ${plainSelector}`
 
         return [selector, classSelector, ancestorSelector].filter(
           (selector) => selector && !selector.includes(":not()")
@@ -76,8 +82,9 @@ export const rewriteStyleSheet = (
   sheet.__pseudoStatesRewritten = true
 
   try {
-    let index = 0
+    let index = -1
     for (const cssRule of sheet.cssRules) {
+      index++
       if (!("selectorText" in cssRule)) continue
       const styleRule = cssRule as CSSStyleRule
       if (matchOne.test(styleRule.selectorText)) {
@@ -86,7 +93,6 @@ export const rewriteStyleSheet = (
         sheet.insertRule(newRule, index)
         if (shadowRoot && shadowHosts) shadowHosts.add(shadowRoot.host)
       }
-      index++
       if (index > 1000) {
         warnOnce("Reached maximum of 1000 pseudo selectors per sheet, skipping the rest.")
         break

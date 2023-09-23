@@ -11,17 +11,28 @@ import { addons, useEffect, useMemo } from "@storybook/preview-api"
 import { PSEUDO_STATES, PseudoState } from "../constants"
 import { rewriteStyleSheet } from "./rewriteStyleSheet"
 
+type PseudoStateConfig = {
+  [P in PseudoState]?: boolean | string | string[]
+}
+
+export interface PseudoParameter extends PseudoStateConfig {
+  rootSelector?: string
+}
+
 const channel = addons.getChannel()
 const shadowHosts = new Set<Element>()
 
 // Drops any existing pseudo state classnames that carried over from a previously viewed story
 // before adding the new classnames. We use forEach for IE compatibility.
 const applyClasses = (element: Element, classnames: Set<string>) => {
-  Object.values(PSEUDO_STATES).forEach((state) => element.classList.remove(`pseudo-${state}`))
+  Object.values(PSEUDO_STATES).forEach((state) => {
+    element.classList.remove(`pseudo-${state}`)
+    element.classList.remove(`pseudo-${state}-all`)
+  })
   classnames.forEach((classname) => element.classList.add(classname))
 }
 
-const applyParameter = (rootElement: Element, parameter: object) => {
+const applyParameter = (rootElement: Element, parameter: PseudoStateConfig = {}) => {
   const map = new Map([[rootElement, new Set<PseudoState>()]])
   const add = (target: Element, state: PseudoState) =>
     map.set(target, new Set([...(map.get(target) || []), state]))
@@ -29,7 +40,7 @@ const applyParameter = (rootElement: Element, parameter: object) => {
   ;(Object.entries(parameter || {}) as [PseudoState, any]).forEach(([state, value]) => {
     if (typeof value === "boolean") {
       // default API - applying pseudo class to root element.
-      if (value) add(rootElement, state)
+      if (value) add(rootElement, `${state}-all` as PseudoState)
     } else if (typeof value === "string") {
       // explicit selectors API - applying pseudo class to a specific element
       rootElement.querySelectorAll(value).forEach((el) => add(el, state))
@@ -41,7 +52,14 @@ const applyParameter = (rootElement: Element, parameter: object) => {
 
   map.forEach((states, target) => {
     const classnames = new Set<string>()
-    states.forEach((key) => PSEUDO_STATES[key] && classnames.add(`pseudo-${PSEUDO_STATES[key]}`))
+    states.forEach((key) => {
+      const keyWithoutAll = key.replace('-all', '') as PseudoState
+      if (PSEUDO_STATES[key]) {
+        classnames.add(`pseudo-${PSEUDO_STATES[key]}`)
+      } else if (PSEUDO_STATES[keyWithoutAll]) {
+        classnames.add(`pseudo-${PSEUDO_STATES[keyWithoutAll]}-all`)
+      }
+    })
     applyClasses(target, classnames)
   })
 }
@@ -60,6 +78,22 @@ const updateShadowHost = (shadowHost: Element) => {
   applyClasses(shadowHost, classnames)
 }
 
+// Drops the rootSelector from the parameter object, as it is not a pseudo state.
+const pseudoConfig = (parameter: PseudoParameter) => {
+  const { rootSelector, ...pseudoStateConfig } = parameter || {}
+  return pseudoStateConfig
+}
+
+// Compares two pseudo state configs to see if they are equal.
+// Uses JSON.stringify to handle arrays, so the order of selectors in the array matters.
+const equals = (a: PseudoStateConfig = {}, b: PseudoStateConfig = {}) =>
+  a !== null &&
+  b !== null &&
+  Object.keys(a).length === Object.keys(b).length &&
+  (Object.keys(a) as PseudoState[]).every(
+    (key) => JSON.stringify(a[key]) === JSON.stringify(b[key])
+  )
+
 // Global decorator that rewrites stylesheets and applies classnames to render pseudo styles
 export const withPseudoState: DecoratorFunction = (
   StoryFn,
@@ -67,8 +101,12 @@ export const withPseudoState: DecoratorFunction = (
 ) => {
   const { pseudo: parameter } = parameters
   const { pseudo: globals } = globalsArgs
+  const { rootSelector } = parameter || {}
 
-  const canvasElement = useMemo(() => {
+  const rootElement = useMemo(() => {
+    if (rootSelector) {
+      return document.querySelector(rootSelector)
+    }
     if (viewMode === "docs") {
       return document.getElementById(`story--${id}`)
     }
@@ -76,14 +114,15 @@ export const withPseudoState: DecoratorFunction = (
       document.getElementById("storybook-root") || // Storybook 7.0+
       document.getElementById("root")
     )
-  }, [viewMode, id])
+  }, [rootSelector, viewMode, id])
 
   // Sync parameter to globals, used by the toolbar (only in canvas as this
   // doesn't make sense for docs because many stories are displayed at once)
   useEffect(() => {
-    if (parameter !== globals && viewMode === "story") {
+    const config = pseudoConfig(parameter)
+    if (viewMode === "story" && !equals(config, globals)) {
       channel.emit(UPDATE_GLOBALS, {
-        globals: { pseudo: parameter },
+        globals: { pseudo: config },
       })
     }
   }, [parameter, viewMode])
@@ -91,13 +130,13 @@ export const withPseudoState: DecoratorFunction = (
   // Convert selected states to classnames and apply them to the story root element.
   // Then update each shadow host to redetermine its own pseudo classnames.
   useEffect(() => {
-    if (!canvasElement) return
+    if (!rootElement) return
     const timeout = setTimeout(() => {
-      applyParameter(canvasElement, globals || parameter)
+      applyParameter(rootElement, globals || pseudoConfig(parameter))
       shadowHosts.forEach(updateShadowHost)
     }, 0)
     return () => clearTimeout(timeout)
-  }, [canvasElement, globals, parameter])
+  }, [rootElement, globals, parameter])
 
   return StoryFn()
 }

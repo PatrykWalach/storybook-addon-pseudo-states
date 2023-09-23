@@ -1,3 +1,92 @@
+# v2.1.1 (Mon Aug 21 2023)
+
+#### 🐛 Bug Fix
+
+- Selecting specific element also applies pseudo state to all its descendants alternate [#85](https://github.com/chromaui/storybook-addon-pseudo-states/pull/85) ([@JonathanKolnik](https://github.com/JonathanKolnik))
+
+#### Authors: 1
+
+- Jono Kolnik ([@JonathanKolnik](https://github.com/JonathanKolnik))
+
+---
+
+# v2.1.0 (Thu Jun 22 2023)
+
+#### 🚀 Enhancement
+
+- Add support for custom root element [#65](https://github.com/chromaui/storybook-addon-pseudo-states/pull/65) ([@sag1v](https://github.com/sag1v) [@ghengeveld](https://github.com/ghengeveld))
+
+#### Authors: 2
+
+- Gert Hengeveld ([@ghengeveld](https://github.com/ghengeveld))
+- Sagiv ben giat ([@sag1v](https://github.com/sag1v))
+
+---
+
+# v2.0.2 (Thu Jun 22 2023)
+
+#### 🐛 Bug Fix
+
+- Fix pseudo state selector menu for Storybook 7 [#78](https://github.com/chromaui/storybook-addon-pseudo-states/pull/78) ([@yasnbouz](https://github.com/yasnbouz) [@ghengeveld](https://github.com/ghengeveld))
+
+#### Authors: 2
+
+- Gert Hengeveld ([@ghengeveld](https://github.com/ghengeveld))
+- Yassine El Bouziady ([@yasnbouz](https://github.com/yasnbouz))
+
+---
+
+# v2.0.1 (Wed Apr 19 2023)
+
+#### 🐛 Bug Fix
+
+- Remove redundant regex negative lookbehind [#73](https://github.com/chromaui/storybook-addon-pseudo-states/pull/73) ([@filipw01](https://github.com/filipw01))
+
+#### Authors: 1
+
+- Filip Wachowiak ([@filipw01](https://github.com/filipw01))
+
+---
+
+# v2.0.0 (Wed Apr 12 2023)
+
+#### 💥 Breaking Change
+
+- Set Storybook deps to v7 [#68](https://github.com/chromaui/storybook-addon-pseudo-states/pull/68) ([@JReinhold](https://github.com/JReinhold))
+- Convert to TypeScript and upgrade to Storybook 7 [#47](https://github.com/chromaui/storybook-addon-pseudo-states/pull/47) ([@ghengeveld](https://github.com/ghengeveld))
+
+#### 🐛 Bug Fix
+
+- Fix media queries breaking rules override [#58](https://github.com/chromaui/storybook-addon-pseudo-states/pull/58) ([@filipw01](https://github.com/filipw01))
+- Remove optional chaining in next [#70](https://github.com/chromaui/storybook-addon-pseudo-states/pull/70) ([@filipw01](https://github.com/filipw01) [@ghengeveld](https://github.com/ghengeveld) runner@fv-az491-751.is1xdb2m0b3ubcod5yxy40qnsg.phxx.internal.cloudapp.net [@kasperpeulen](https://github.com/kasperpeulen))
+
+#### Authors: 5
+
+- Filip Wachowiak ([@filipw01](https://github.com/filipw01))
+- Gert Hengeveld ([@ghengeveld](https://github.com/ghengeveld))
+- ghengeveld (runner@fv-az491-751.is1xdb2m0b3ubcod5yxy40qnsg.phxx.internal.cloudapp.net)
+- Jeppe Reinhold ([@JReinhold](https://github.com/JReinhold))
+- Kasper Peulen ([@kasperpeulen](https://github.com/kasperpeulen))
+
+---
+
+# v1.15.5 (Thu Mar 23 2023)
+
+#### 🐛 Bug Fix
+
+- Remove optional chaining [#52](https://github.com/chromaui/storybook-addon-pseudo-states/pull/52) ([@filipw01](https://github.com/filipw01))
+
+#### ⚠️ Pushed to `main`
+
+- 1.15.4 ([@ghengeveld](https://github.com/ghengeveld))
+
+#### Authors: 2
+
+- Filip Wachowiak ([@filipw01](https://github.com/filipw01))
+- Gert Hengeveld ([@ghengeveld](https://github.com/ghengeveld))
+
+---
+
 # v1.15.2 (Tue Dec 13 2022)
 
 #### 🐛 Bug Fix
